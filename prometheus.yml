@@ -1,1 +1,7 @@
-placeholder
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds.
+  evaluation_interval: 15s # Set the evaluation interval to every 15 seconds.
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+    - targets: ['nginx-exporter:9113']
