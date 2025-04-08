@@ -26,6 +26,26 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+      - loki
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/var/lib/loki
+      - ./loki-config.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - promtail_data:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+      - web-service
   # alertmanager:
   #   image: prom/alertmanager:latest
   #   ports:
@@ -36,23 +56,30 @@ services:
   #   command:
   #     - '--config.file=/etc/alertmanager/alertmanager.yml'
   #     - '--storage.path=/alertmanager'
-  hello-world:
+  web-service:
     image: nginx:latest
     ports:
       - "8080:8080"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./index.html:/usr/share/nginx/html/index.html
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
     ports:
       - "9113:9113"
     depends_on:
-      - hello-world
+      - web-service
     command:
-      - '--nginx.scrape-uri=http://hello-world:8080/stub_status'
+      - '--nginx.scrape-uri=http://web-service:8080/stub_status'
 
 volumes:
   prometheus_data: {}
   grafana_data: {}
   alertmanager_data: {}
+  loki_data: {}
+  promtail_data: {}
