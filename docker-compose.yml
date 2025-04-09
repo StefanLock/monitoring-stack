@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   prometheus:
     image: prom/prometheus:latest
@@ -11,8 +12,6 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
-    # depends_on:
-    #   - alertmanager
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -32,9 +31,11 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - loki_data:/var/lib/loki
+      - loki_data:/var/lib/loki # Keep for index and WAL
       - ./loki-config.yml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
+    depends_on:
+      - minio
   promtail:
     image: grafana/promtail:latest
     volumes:
@@ -46,16 +47,6 @@ services:
     depends_on:
       - loki
       - web-service
-  # alertmanager:
-  #   image: prom/alertmanager:latest
-  #   ports:
-  #     - "9093:9093"
-  #   volumes:
-  #     - alertmanager_data:/alertmanager
-  #     - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
-  #   command:
-  #     - '--config.file=/etc/alertmanager/alertmanager.yml'
-  #     - '--storage.path=/alertmanager'
   web-service:
     image: nginx:latest
     ports:
@@ -76,10 +67,21 @@ services:
       - web-service
     command:
       - '--nginx.scrape-uri=http://web-service:8080/stub_status'
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001" # MinIO Console
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=loki
+      - MINIO_ROOT_PASSWORD=lokipassword
+    command: server /data --console-address ":9001"
 
 volumes:
   prometheus_data: {}
   grafana_data: {}
-  alertmanager_data: {}
   loki_data: {}
   promtail_data: {}
+  minio_data: {}
