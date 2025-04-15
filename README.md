@@ -42,6 +42,7 @@ That's it, you should now have the monitoring stack up and running.
 
 ## Roadmap/Improvements
 
+* Restructure folder structure ready for dockerfiles.
 * Change Promtail to [Alloy](https://grafana.com/docs/loki/latest/setup/migrate/migrate-to-alloy/) as Promtail is now EOL.
 * Clean up Log export to only include webservice logs for the POC purpose.
 * Add alert manager which a local solution
