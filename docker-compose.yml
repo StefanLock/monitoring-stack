@@ -33,8 +33,6 @@ services:
       - loki_data:/var/lib/loki # Keep for index and WAL
       - ./loki-config.yml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
-    depends_on:
-      - minio
   promtail:
     image: grafana/promtail:latest
     volumes:
