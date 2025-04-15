@@ -7,7 +7,7 @@ This a local monitoring stack proof of concept that can be spun up locally or in
 * Grafana Loki
 * Prometheus
 * Web Service
-* Alert Manager (_Needs to be added_)
+* Alert Manager
 
 __Note:__ We don't have AlertManager currently as I want to find a solution for this locally.
 
